@@ -38,7 +38,13 @@ hist(calculo)
 
 ### Estimación de $\beta_0$ y $\beta_1$
 
-Recordemos que las fórmulas para calcular los parámetros $\beta_0$ y $\beta_1$ son las siguientes.
+Recordemos que las fórmulas para calcular los parámetros $\beta_0$ y $\beta_1$ son las siguientes
+
+$S_{xy} = \sum x_i y_i - n \bar{x} \bar{y}$
+
+$SC_{x} = \sum x^2_i - n (\bar{x})^2$
+
+$SC_{y} = \sum y^2_i - n (\bar{y})^2$
 
 Para esta parte nombraremos "x" al vector mate y "y" al vector cálculo. De esta forma es más fácil trabajar con las fórmulas. Recordemos que x es la variable y de igual forma y es la fariable de respuesta.
 
