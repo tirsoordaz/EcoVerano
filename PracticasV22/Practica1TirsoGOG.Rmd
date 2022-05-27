@@ -1,0 +1,94 @@
+---
+title: "Práctica 1"
+subtitle: "Regresión Lineal en R"
+author: "Tirso G. Ordaz García"
+date: '2022-05-27'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Regresión Lineal
+
+Esta práctica tiene el objetivo de mostrar un ejemplo básico de cómo usar R para producir un modelo de regresión lineal.
+
+### Datos
+
+En este caso se utilizarán datos de calificaciones la materia de Cálculo y Matemáticas. Lo que se buscaría con el modelo de regresión es encontrar si existe alguna correlación o tendencia entre ambas calificaciones.
+
+El siguiente código genera los vectores mate y calculo con 10 valores cada uno y los grafica uno contra el otro.
+
+
+```{r cars}
+mate <- c(39,43,21,64,57,47,28,75,34,52)
+calculo <- c(65,78,52,82,92,89,73,98,56,75)
+
+plot(mate,calculo,col='deeppink4',pch=19,lwd=3,
+     main='Calificaciones de matemáticas y cálculo')
+```
+
+El siguiente paso es graficar un histograma de las calificaciones de cálculo para observar su distribución.
+
+```{r}
+hist(calculo)
+```
+
+
+### Estimación de $\beta_0$ y $\beta_1$
+
+Recordemos que las fórmulas para calcular los parámetros $\beta_0$ y $\beta_1$ son las siguientes.
+
+Para esta parte nombraremos "x" al vector mate y "y" al vector cálculo. De esta forma es más fácil trabajar con las fórmulas. Recordemos que x es la variable y de igual forma y es la fariable de respuesta.
+
+```{r}
+x <- mate
+y <- calculo
+```
+
+Ahora podemos calcular cada componente de las fórmulas para simplificar el trabajo.
+
+```{r}
+xcuad <- x^2
+ycuad <- y^2
+
+n <- length(x)
+
+xy <- x*y
+
+xmean <- mean(x)
+ymean <- mean(y)
+```
+
+Ahora juntamos cada una de las variables que ya tenemos calculadas en nuestras fórmulas para encontrar $SCxy$, $SCx$ y $SCy$
+
+```{r}
+SCxy <- sum(xy)-n*xmean*ymean
+SCxy
+SCx <- sum(xcuad)-n*(xmean)^2
+SCx
+SCy <- sum(ycuad)-n*(ymean)^2
+SCy
+```
+
+Finalmente calculamos $\beta_0$ y $\beta_1$
+
+```{r}
+beta1 <- SCxy/SCx
+beta1
+beta0 <- ymean-beta1*xmean
+beta0
+```
+
+Observamos los resultados
+
+```{r}
+plot(mate,calculo,col='deeppink2',pch=19,lwd=3,
+     main='Mate vs Calculo')
+# Juntar 2 gráficos en la misma ventana (buscar como se
+# hace en ggplot)
+par(new=TRUE)
+plot(mate, beta0+beta1*mate, type="l", col="blue", lwd=3)
+```
+
