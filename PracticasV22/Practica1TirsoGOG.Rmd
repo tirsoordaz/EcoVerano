@@ -1,6 +1,6 @@
 ---
-title: "Práctica 1"
-subtitle: "Regresión Lineal en R"
+title: "Econometría I"
+subtitle: "Práctica 1: Regresión Lineal en R"
 author: "Tirso G. Ordaz García"
 date: '2022-05-27'
 output: html_document
@@ -12,14 +12,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Regresión Lineal
 
-Esta práctica tiene el objetivo de mostrar un ejemplo básico de cómo usar R para producir un modelo de regresión lineal.
+Esta práctica tiene el objetivo mostrar cómo se utiliza R para producir un modelo de regresión linear simple entre 2 variables aleatorias. Se muestra cómo calcular los parámetros de las fórmulas manualmente y también cómo utilizar la función lm() de R.
+
+Recordemos que la regresión lineal simple tiene la forma de
+
+$\hat{y}=\beta_0+\beta_1x$
+
+donde $\hat{y}$ es la variable de respuesta y $x$ la variable predictora.
+
+Para encontrar esta línea, se deben calcular los coeficientes $\beta_0$ y $\beta_1$.
 
 ### Datos
 
 En este caso se utilizarán datos de calificaciones la materia de Cálculo y Matemáticas. Lo que se buscaría con el modelo de regresión es encontrar si existe alguna correlación o tendencia entre ambas calificaciones.
 
 El siguiente código genera los vectores mate y calculo con 10 valores cada uno y los grafica uno contra el otro.
-
 
 ```{r cars}
 mate <- c(39,43,21,64,57,47,28,75,34,52)
@@ -45,7 +52,6 @@ text(h$mids,h$counts,labels=h$counts, adj=c(0.5, -0.5))
 
 ```
 
-
 ### Estimación de $\beta_0$ y $\beta_1$
 
 Recordemos que las fórmulas para calcular los parámetros $\beta_0$ y $\beta_1$ ya en su forma simplificada son las siguientes:
@@ -56,7 +62,7 @@ $SC_{x} = \sum x^2_i - n (\bar{x})^2$
 
 $SC_{y} = \sum y^2_i - n (\bar{y})^2$
 
-Para esta parte nombraremos "x" al vector mate y "y" al vector cálculo. De esta forma es más fácil trabajar con las fórmulas. Recordemos que x es la variable y de igual forma y es la fariable de respuesta.
+Para esta parte nombraremos "x" al vector mate y "y" al vector cálculo. De esta forma es más fácil trabajar con las fórmulas. Recordemos que x es la variable y de igual forma y es la variable de respuesta.
 
 ```{r}
 x <- mate
@@ -97,7 +103,7 @@ beta0 <- ymean-beta1*xmean
 beta0
 ```
 
-Observamos los resultados
+Observamos los resultados graficando el modelo de regresión con los parámetros obtenidos.
 
 ```{r}
 plot(mate,calculo,col='slategray3',pch=20,lwd=3,
@@ -110,6 +116,8 @@ plot(mate, beta0+beta1*mate, type="l", col="indianred", lwd=2,ylim=c(50,100),xla
 
 ## Usando la función lm()
 
+En este ejemplo usaremos la función lm() para ahorrarnos todos los pasos que se hicieron anteriormente. Con la función lm(), R calcula todos los valores y podemos graficarla directamente. Es importante notar que obtuvimos el mismo reslutado pero utilizando menos líneas de código lo que la vuelve muy conveniente.
+
 ```{r}
 # Función lm
 
@@ -118,8 +126,18 @@ model
 # Always call summary
 # Remember to check number of *s in the p value (1, 2, 3)
 summary(model)
-plot(mate, calculo, main="Modelo de regresión utilizando la función lm",col='slategray4',pch=20,lwd=2,ylim=c(50,100),
+plot(mate, calculo, main="Modelo de regresión utilizando la función lm()",col='slategray4',pch=20,lwd=2,ylim=c(50,100),
      xlab="Matemáticas",ylab="Cálculo",
      abline(model, col="indianred1", lwd=3))
 ```
+
+
+Finalmente podemos utilizar el siguiente código en donde se revisarán ciertas hipótesis que se deben cumplir en las gráficas.
+
+```{r}
+plot(model)
+
+```
+
+
 
