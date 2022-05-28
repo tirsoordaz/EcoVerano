@@ -1,0 +1,68 @@
+---
+title: "Econometría I"
+subtitle: "Práctica 2: Regresión utilizando datos de Yahoo Finance"
+author: "Tirso G. Ordaz García"
+date: '2022-05-28'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Descargar datos de Yahoo Finance
+
+El objetivo de esta práctica es poner aprueba lo aprendido en la Práctica 1. Para eso, se descargaron los datos de la bolsa de valores Mexicana de la empresa BIMBO desde la página de Yahoo Finance <https://es.finance.yahoo.com/quote/BIMBOA.MX/>.
+
+### Importar los datos a R
+
+El primer paso es importar los datos desde el archivo csv hacia R. Es necesario instalar el paquete "readr", con el cual se pasarán los datos a un objeto tipo data frame llamado BIMBO. A continuación se desplegarán los nombres de las columnas del dataframe para darnos una idea de lo que contiene. Es importante asegurarse que el archivo excel de BIMBOA.MX.csv se encuentre en el mismo directorio de trabajo que nuestro script o Rmd.
+
+```{r cars}
+# install.packages("readr)
+library(readr)
+
+BIMBO <- read_csv("BIMBOA.MX.csv")
+names(BIMBO)
+```
+
+### Preparación de los datos
+
+En el siguiente paso se selecciona únicamente la columna "Close" de nuestra tabla de datos la cual hace referencia al precio de cierre de cada día de la acción de Bimbo. Con la función head() podemos observar los primeros valres de nuestra variable close para verificar que el proceso se realizó de manera correcta. Finalmente graficamos la el precio de la acción a lo largo de los 255 días observados.
+
+```{r pressure, echo=FALSE}
+# Select close column
+close <- BIMBO$Close
+
+head(close)
+
+n <- length(close)
+
+plot(close, type="l", col="deeppink",
+     lwd=2,
+     xlab="Día",
+     ylab="Precio de cierre ($)",
+     main="Precio acción de Bimbo a lo largo de 255 días en pesos mexicanos")
+
+```
+
+### Aplicar y graficar modelo de regresión lineal simple
+
+En el siguiente código se genera una secuencia x desde 1 hasta el número de filas en la columna Close. Se entrena el modelo de regresión lineal y se grafica.
+
+```{r}
+##################################################
+# Modelo de regresión simple
+
+x <- 1:n
+
+model <- lm(close~x)
+
+plot(x, close, type="l", col="lightslateblue",
+     lwd=2,
+     xlab="Día",
+     ylab="Precio de cierre ($)",
+     main="Regresión lineal simple a precio de la acción de Bimbo")
+abline(model, col="palegoldenrod", lwd=2)
+```
+

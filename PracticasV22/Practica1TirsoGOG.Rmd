@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Regresión Lineal
 
-Esta práctica tiene el objetivo mostrar cómo se utiliza R para producir un modelo de regresión linear simple entre 2 variables aleatorias. Se muestra cómo calcular los parámetros de las fórmulas manualmente y también cómo utilizar la función lm() de R.
+Esta práctica tiene el objetivo mostrar cómo se utiliza R para producir un modelo de regresión lineal simple entre 2 variables aleatorias. Se muestra cómo calcular los parámetros de las fórmulas manualmente y también cómo utilizar la función lm() de R.
 
 Recordemos que la regresión lineal simple tiene la forma de
 
