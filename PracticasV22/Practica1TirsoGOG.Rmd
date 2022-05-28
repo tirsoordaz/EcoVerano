@@ -25,20 +25,30 @@ El siguiente código genera los vectores mate y calculo con 10 valores cada uno 
 mate <- c(39,43,21,64,57,47,28,75,34,52)
 calculo <- c(65,78,52,82,92,89,73,98,56,75)
 
-plot(mate,calculo,col='deeppink4',pch=19,lwd=3,
+plot(mate,calculo,col='midnightblue',type="p",pch=20,
+     xlab="Matemáticas",
+     ylab="Cálculo",
+     ylim = c(50,100),
      main='Calificaciones de matemáticas y cálculo')
 ```
 
 El siguiente paso es graficar un histograma de las calificaciones de cálculo para observar su distribución.
 
 ```{r}
-hist(calculo)
+h <- hist(calculo,
+     main="Histograma de calificaciones de cálculo",
+     xlab="Calificaciones de cálculo",
+     ylab="Frecuencia",
+     col="salmon",
+     ylim = c(0,4))
+text(h$mids,h$counts,labels=h$counts, adj=c(0.5, -0.5))
+
 ```
 
 
 ### Estimación de $\beta_0$ y $\beta_1$
 
-Recordemos que las fórmulas para calcular los parámetros $\beta_0$ y $\beta_1$ son las siguientes
+Recordemos que las fórmulas para calcular los parámetros $\beta_0$ y $\beta_1$ ya en su forma simplificada son las siguientes:
 
 $S_{xy} = \sum x_i y_i - n \bar{x} \bar{y}$
 
@@ -90,11 +100,26 @@ beta0
 Observamos los resultados
 
 ```{r}
-plot(mate,calculo,col='deeppink2',pch=19,lwd=3,
-     main='Mate vs Calculo')
+plot(mate,calculo,col='slategray3',pch=20,lwd=3,
+     main='Modelo de regresión de cálculo respecto a matemáticas',ylim=c(50,100),xlab="",ylab="")
 # Juntar 2 gráficos en la misma ventana (buscar como se
 # hace en ggplot)
 par(new=TRUE)
-plot(mate, beta0+beta1*mate, type="l", col="blue", lwd=3)
+plot(mate, beta0+beta1*mate, type="l", col="indianred", lwd=2,ylim=c(50,100),xlab="Matemáticas",ylab="Cálculo")
+```
+
+## Usando la función lm()
+
+```{r}
+# Función lm
+
+model <- lm(calculo~mate)
+model
+# Always call summary
+# Remember to check number of *s in the p value (1, 2, 3)
+summary(model)
+plot(mate, calculo, main="Modelo de regresión utilizando la función lm",col='slategray4',pch=20,lwd=2,ylim=c(50,100),
+     xlab="Matemáticas",ylab="Cálculo",
+     abline(model, col="indianred1", lwd=3))
 ```
 
