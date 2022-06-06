@@ -1,0 +1,298 @@
+---
+title: "Econometría I"
+subtitle: "Práctica 4: Intervalos de confianza y de predicción"
+author: "Tirso G. Ordaz García"
+date: '2022-05-31'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Calcular componentes
+
+Utilizamos los vectores mate y calculo para nuestro análisis. Calculamos coeficientes $b_0$ y $b_1$.
+
+```{r}
+mate <- c(39,43,21,64,57,47,28,75,34,52)
+calculo <- c(65,78,52,82,92,89,73,98,56,75)
+
+x <- mate
+y <- calculo
+
+xcuad <- x^2
+ycuad <- y^2
+
+n <- length(x)
+xy <- x*y
+xmean <- mean(x)
+ymean <- mean(y)
+
+SCxy <- sum(xy)-n*xmean*ymean
+SCx <- sum(xcuad)-n*(xmean)^2
+SCy <- sum(ycuad)-n*(ymean)^2
+
+beta1 <- SCxy/SCx
+beta0 <- ymean-beta1*xmean
+
+```
+
+Calculamos $S$
+
+```{r}
+SSE <- SCy - beta1*SCxy
+
+Scuad <- SSE/(n-2)
+
+S <- sqrt(Scuad)
+
+CV <- 100*S/ymean
+```
+
+Realizamos prueba de hipótesis para ver si hay algun efecto
+
+
+```{r}
+alpha <- 0.05 # nivel de confianza
+df <- n-2 # grados de libertad de la dist t-student
+talfad <- qt(alpha/2,df,lower.tail = FALSE)
+talfai <- qt(alpha/2,df,lower.tail = TRUE)
+talfad
+talfai
+# Observemos que talfad es positivo y talfai es negativo
+
+tc <- beta1/(S/sqrt(SCx))
+
+# como tc es mayor que talfad, entonces significa que cae
+# dentro de la regíon de rechazo y rechazamos la hipótesis nula
+
+pvalor <- 2*pt(-abs(tc),df)
+pvalor
+if(pvalor<alpha){
+  print("Se rechaza H_0 a favor de H_1, es decir
+        la variable predictora X aporta información al modelo")
+}else{
+  print("No hay suficiente evidencia para rechazar H_0
+        es decir que la variable X no aporta información al modelo")
+}
+```
+
+Intervalos de confianza para $b_1$
+
+```{r}
+Sbeta1 <- S/SCx
+Linf <- beta1-(talfad)*Sbeta1
+Linf
+
+Lsup <- beta1+(talfad)*Sbeta1
+Lsup
+
+r <- SCxy/sqrt(SCx*SCy)
+r #Fuerte de manera positiva
+
+rcuad <- (1-SSE/SCy)*100
+rcuad
+```
+
+
+Podemos usar los siguientes comandos para encontrar los valores anteriores.
+
+```{r}
+model <- lm(calculo~mate)
+model
+# Always call summary
+# Remember to check number of *s in the p value (1, 2, 3)
+summary(model)
+anova(model)
+```
+
+Análisis de residuales
+
+```{r}
+# Análisis de residuales
+
+residuo <- model$residuals
+head(residuo)
+
+plot(residuo, type="b",col="deeppink")
+lines(1:n,rep(0,n), col="blue")
+
+# boxplot a residuos e histograma a residuos
+boxplot(residuo, col="deeppink")
+#boxplot sirve para identificar outliers fuera de la caja
+hist(residuo, col="deeppink")
+# cuantiles teóricos vs de la muestra
+# Realizar un análisis de residuos de forma gráfica
+qqnorm(residuo,col="deeppink",lwd="2");qqline(residuo,col="blue")
+```
+
+Comprobamos normalidad utilizando 2 distintas pruebas
+
+```{r}
+## Pruebas de normalidad
+# H_0: Los residuales siguen una distribución normal
+# vs H_1: Los residuales NO siguen una distribución normal
+
+shapiro.test(residuo)
+# si p value es mayor a 0.05, no se rechaza entonces no existe evidencia para
+#decir que los errores no siguen una distribución normal
+
+
+# si pvalue > 0.05 entonces los datos siguen dist normal
+
+# install.packages("nortest")
+library(nortest)
+ad.test(residuo)
+
+# install.packages("MASS")
+library("MASS")
+require(MASS)
+fitdistr(residuo,"normal")
+
+```
+
+calculamos intervalos de confianza
+
+```{r}
+## Calcular intervalos de confianza
+
+par(mfrow=c(1,2))
+pronostico <- model$fitted.values
+#pronostico2
+#pronostico1 <- beta0+beta1*mate
+#plot(pronostico2, col="deeppink")
+#plot(pronostico1,col="blue")
+Sy <-  S*sqrt((1/n)+((mate-xmean)^2/SCx))
+Sy
+
+Spredict <- S*sqrt(1+(1/n)+((mate-xmean)^2/SCx))
+Spredict
+
+# ic para el promedio de y
+Liy <- pronostico-talfad*Sy
+Lsy <- pronostico+talfad*Sy
+Liy
+Lsy
+```
+
+Intervalo de confianza para valor particular
+
+```{r}
+# ic para valor particular dado un x_p
+
+Lipredict <- pronostico - talfad*Spredict
+Lipredict
+Lspredict <- pronostico + talfad*Spredict
+Lspredict
+# Por qué usamos talfad?
+# Para que siempre se quede positivo, sino se inver-
+# tirían los límites
+```
+
+Modo automático de calcular intervalos de confianza
+
+```{r}
+datosx <- seq(from=min(mate),to=max(mate),
+              length.out=100)
+# crea secuencia del min de mate hasta el max de mate con 100 puntos
+
+# Hacer pronósticos del modelo
+Intervalo <- predict(object=model,
+                     newdata = data.frame(mate=datosx),
+                     interval = "confidence", level=0.95)
+head(Intervalo)
+
+plot(mate,calculo,col="deeppink",pch=20,lwd=2)
+abline(model,col="blue")
+
+lines(x=datosx,y=Intervalo[,2],col="lightskyblue",lty=3)
+lines(x=datosx,y=Intervalo[,3],col="lightskyblue",lty=3) 
+```
+
+Ahora intervalos de predicción
+
+
+```{r}
+datosx <- seq(from=min(mate),to=max(mate),
+              length.out=100)
+# crea secuencia del min de mate hasta el max de mate con 100 puntos
+
+# Hacer pronósticos del modelo
+IntervaloPred <- predict(object=model,
+                     newdata = data.frame(mate=datosx),
+                     interval = "predict", level=0.95)
+head(IntervaloPred)
+
+plot(mate,calculo,col="deeppink",pch=20,lwd=2)
+abline(model,col="blue")
+
+lines(x=datosx,y=IntervaloPred[,2],col="lightskyblue",lty=3)
+lines(x=datosx,y=IntervaloPred[,3],col="lightskyblue",lty=3)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,214 @@
+---
+title: "Econometría I"
+subtitle: "Reporte Regresión Lineal"
+author: "Tirso G. Ordaz García"
+date: '2022-06-01'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Introducción
+
+Para el siguiente reporte de reresión lineal se utilizaron datos de tiendas de supermercado y sus ventas. Se utilizaron las variables Items_Available que se refiere al número de artículos que tiene en venta una tienda y la variable Store_Sales que se refiere a las ventas totales de la tienda. El objetivo es identificar si la cantidad de artículos en venta está correlacionada con las ventas totales en una tienda de supermercado.
+
+Los datos fueron obtenidos de <https://www.kaggle.com/datasets/surajjha101/stores-area-and-sales-data>.
+
+En el siguiente pedazo de código se importan los datos a R y se crean las variables "x" (items) así como "y" (sales). También se genera una variable "n" que guarda la longitud de los vectores.
+
+```{r}
+library(readr)
+stores <- read_csv("Stores.csv")
+head(stores)
+
+items <- stores$Items_Available
+sales <- stores$Store_Sales
+
+x <- items
+y <- sales
+n <- length(items)
+```
+
+## 2. Análisis descriptivo
+
+En el siguiente código hacemos un análisis descriptivo de cada una de nuestras variables.
+
+Recordemos que el primer cuartil indica el valor tal que el 25% de las observaciones son iguales o inferiores a él. El 3er cuartil de igual forma indica el valor tal que el 75% de las observaciones son iguales o inferiores. 
+
+```{r}
+summary(x)
+var(x)
+sd(x)
+summary(y)
+var(y)
+sd(y)
+```
+
+### Gráficos
+
+#### Dispersión
+
+No podemos apreciar una tendencia clara, esto nos da una primera idea de que tal vez no exista una correlación fuerte entre las variables.
+
+```{r}
+plot(x,y, col="deeppink",pch=20,lwd=0.1)
+```
+
+### Histograma
+
+Se puede apreciar cierta normalidad en los datos, lo cuál es un punto a favor para los supuestos del modelo.
+```{r}
+hist(y,col="deeppink")
+```
+
+#### Boxplot
+Para el boxplot recordemos que la línea marcada representa la mediana, de ahí hacia arriba tenemos al tercer cuartil y hacia abajo al primer cuartil. Los valores máximos y mínimos se representan por las líneas horizontales fuera de la caja. En este caso observamos un outlier que cae fuera de los límites por lo que habrpia que analizar si es necesario mantenerlo en el modelo o si se puede remover sin problema.
+```{r}
+boxplot(y,col="deeppink")
+```
+
+
+
+
+
+## 3. Modelo de regresión
+Para el modelo de regresión graficamos la recta $\hat{y}=\beta_0+\beta_1x$ utilizando como ventas como variable de respuesta y número de ítems como variable predictora. Trazamos la línea y vemos cómo se representa entre nuestras observaciones.
+
+```{r}
+model <- lm(y~x)
+
+plot(x, y, col='deeppink2',pch=20,lwd=0.1,
+     abline(model, col="blue", lwd=3),
+     xlab = "Número de ítems",
+     ylab = "Ventas")
+```
+
+
+## 4. Análisis de residuales descriptivo y con pruebas de hipótesis
+
+```{r}
+residuo <- model$residuals
+head(residuo)
+
+plot(residuo,col="deeppink")
+lines(1:n,rep(0,n), col="blue")
+
+```
+
+### Boxplot e histograma de residuos
+Observamos que en el boxplot seguimos teniendo el mismo outlier probablemente gracias a la gran diferencia que representaba desde antes, su error sigue siendo muy notorio comparado con los demás. Importante notar que tenemos errores muy grandes para este modelo.
+
+Una buena observación es que de manera gráfica parece que se tienen errores distribuidos normalmente con media de 0 y varianza finita. Esto se aprecia en el histograma.
+```{r}
+boxplot(residuo, col="deeppink")
+hist(residuo, col="deeppink")
+```
+### QQnorm
+Otra prueba para verificar normalidad es graficar los cuantiles de la muestra frente a los teóricos. Estamos esperando que sigan una línea recta.En este caso podemos ver cómo en los extremos parece que no se cumple la normalidad de los residuos.
+
+```{r}
+qqnorm(residuo,col="deeppink",lwd="2");qqline(residuo,col="blue")
+```
+
+
+
+
+### Prueba de hipótesis
+Realizando una prueba de hipótesis de la siguiente forma:
+$H_0$: los residuales siguen una distribución normal vs $H_1$: Los residuales no siguen una distribución normal.
+#### Shapiro
+
+Probamos la prueba tipo Shapiro
+```{r}
+shapiro.test(residuo)
+#### TENEMOS pvalue < 0.05!!! Loque indica que los datos no tienen una distribución normal
+# si pvalue > 0.05 entonces los datos siguen dist normal
+```
+Obtenemos un p-valor < 0.05 por lo que rechazamos la hipótesis nula, indicando que es probable que los residuales no sigan una distribución normal.
+
+#### AD Prueba
+
+```{r}
+library(nortest)
+ad.test(residuo)
+```
+De igual manera obtenemos un p-valor demasiado bajo, indicando y confirmando que los residuales no tienen una distribución normal.
+
+Podemos continuar con el análisis del modelo siempre recordando que los supuestos de errores normales no se satisfacen.
+
+
+## 5. Estimación de S cuadrada,  y coeficiente de variación
+Utilizamos el la función anova() para obterner la SSE y poder calcular $S$ a partir de los grados de libertad de nuestra distribución.
+```{r}
+anova(model)
+SSE <- 261910000000
+Scuad <-  SSE/(n-2)
+S <- sqrt(Scuad)
+S
+```
+Ahora utilizamos $S$ para calcular el coeficiente de variación de nuestro modelo. Este coeficiente nos muestra el porcentaje que representa la desviación estándar en la media. Normalmente buscamos que este sea menor o igual a 10%, en este caso vemos que sobrepasa por bastante el 10% empírico lo que es otra señal que el modelo tiene mucha variabilidad.
+```{r}
+coef_var <- 100*S/mean(y)
+coef_var
+
+```
+
+
+## 6. Prueba de hipótesis para B1
+
+Ahora calculamos el pvalor para B1 y observamos que es menor que 0.05. Es por esto que rechazamos la hipótesis nula y decimos que existe información aportada por B1 al modelo de regresión lineal.
+
+```{r}
+summary(model)
+
+alpha <- 0.05
+pvalor <- 0.00306
+
+if(pvalor<alpha){
+  print("Se rechaza H_0 a favor de H_1, es decir
+        la variable predictora X aporta información al modelo")
+}else{
+  print("No hay suficiente evidencia para rechazar H_0
+        es decir que la variable X no aporta información al modelo")
+}
+```
+
+
+## 7. Intervalo de confianza para B1, coef de correlación y de determinación con su interpretación.
+
+Encontramos un coeficiente de correlación muy cercano a 0 lo que nos indica que no existe mucha correlación entre nuestras variables. De igual forma encontramos un coeficiente de determinación muy cercano a 0, indicando que nuestro modelo no es nada confiable para predicciones.
+```{r}
+
+
+r <- cor(x,y)
+r
+Rcuad <- summary(model)$r.squared
+Rcuad
+```
+## Intervalos de confianza
+
+Por último encontramos los intervalos de confianza para el modelo de regresión y los graficamos. Podemos observar que apenas cubren una pequeña porción de los datos y observamos que son muy pequeños. Es decir que nuestro modelo no da una buena aproximación de los datos.
+
+```{r}
+datosx <- seq(from=min(x),to=max(x),
+              length.out=100)
+# crea secuencia del min de x hasta el max de mate con 100 puntos
+
+# Hacer pronósticos del modelo
+Intervalo <- predict(object=model,
+                     newdata = data.frame(x=datosx),
+                     interval = "confidence", level=0.95)
+head(Intervalo)
+
+plot(x,y,col="deeppink",pch=20,lwd=0.01)
+abline(model,col="blue")
+
+lines(x=datosx,y=Intervalo[,2],col="lightskyblue",lty=3,lwd=2)
+lines(x=datosx,y=Intervalo[,3],col="lightskyblue",lty=3, lwd=2)
+```
+## Conclusión
+
+Podemos finalmente decir que para las tiendas de tipo supermercado no encontramos practicamente ninguna correlación entre el número de ítems que se tengan a la venta en la tienda y las ventas totales. A pesar de que B1 provee cierta información para el modelo, es tan pequeña que no podemos considerarla como relevante. Incluso nuestro supuesto de errores normales no se cumple por lo que el modelo es aún menos fiable. Lamentablemente no podemos asegurar tener ventas altas sólo por tener más objetos a la venta.
+

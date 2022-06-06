@@ -1,0 +1,105 @@
+---
+title: "Practica 6"
+author: "Tirso G. Ordaz García"
+date: '2022-06-02'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Importamos los datos
+
+```{r}
+library(readxl)
+subasta <- read_excel("Ejemplo subasta (1).xlsx")
+head(subasta)
+
+edad <- subasta$Edad # x1 predictora
+postores <- subasta$`Num Postores` # x2 predictora
+precio <- subasta$`Precio de subasta` # variable de respuesta
+
+```
+
+### Análisis visual para observar relación en las variables
+
+```{r}
+datos <- data.frame(edad, postores, precio)
+
+pairs(datos)
+```
+
+A partir de este análisis decidimos utilizar edad y postores como variables predictoras de nuestro análisis de regresión múltiple para la variable de respuesta precio.
+
+### Modelos lineales
+
+```{r}
+##### precio ~ edad
+
+model1 <- lm(precio ~ edad)
+summary(model1)
+
+plot(edad, precio,col="deeppink",pch=20,lwd=2)
+abline(model1, col="lightblue")
+
+##### precio ~ postores
+
+model2 <- lm(precio ~ postores)
+summary(model2)
+
+plot(postores, precio,col="deeppink",pch=20,lwd=2)
+abline(model2, col="lightblue")
+```
+
+Importante recordar que la R cuadrada de los modelos es la que indica cuál modelo es el mejor. Entre mayor sea R cuadrada, tendrá mayor precisión el modelo.
+
+### Modelo de regresión múltiple
+
+```{r}
+modelmult <- lm(precio~edad + postores)
+summary(modelmult)
+anova <-  anova(modelmult)
+```
+
+#### Ecuación del modelo
+
+#### $\hat{y}= -1339 + 12.74x_1 + 85.95x_2$
+
+
+### Análisis de los residuales
+
+$H_0$: los residuales siguen una distribución normal vs $H_1$: Los residuales no siguen una distribución normal.
+
+```{r}
+library(nortest)
+
+error <- modelmult$residuals
+error
+
+shapiro.test(error)
+ad.test(error)
+```
+
+Ya que ambos pvalues son mayores que 0.05, aceptamos la hiótesis nula que indica que los residuales siguen una distribución normal.
+
+### Boxplot e histograma
+
+```{r}
+boxplot(error, col="deeppink")
+hist(error, col="deeppink")
+
+```
+
+No hay outliers que afecten nuestro modelo en el boxplot, el histograma no muestra normalidad, hay que realizar un análisis más profundo.
+
+# Media y desviación estándar del error
+
+```{r}
+library(MASS)
+fitdistr(error,"normal")
+```
+
+
+Observamos una media muy cercana a 0, al igual que una desviación estándar finita lo que nos indica que los errores son normales.
+
